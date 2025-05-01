@@ -10,7 +10,7 @@ public class ApproachState : IBirdState
         Debug.Log($"{bird.name} Enters : {nameof(ApproachState)}");
 
         bird.BehaviourCoroutine = bird.StartCoroutine(
-            bird.ApproachToTarget((bird) => OnDone(bird))
+            bird.ApproachTo((bird) => OnDone(bird))
         );
     }
     
@@ -30,5 +30,33 @@ public class ApproachState : IBirdState
     {
         bird.Animator.SetTrigger("FlyToIdle");
         bird.TransitState(new PerchState());
+    }
+
+    public void HandlePalmUpSelected(BirdBehaviour bird) 
+    {
+        bird.CurSpot.Vacate();
+        bird.PreSpot = bird.CurSpot;
+        bird.CurSpot = null;
+        bird.Target = null;
+        bird.Direction = bird.transform.forward;
+
+        bird.Target = UserSpots.Instance.GetHoverTarget();
+        
+        bird.TransitState(new HoverState());
+    }
+
+    public void HandlePalmUpUnselected(BirdBehaviour bird) 
+    {
+
+    }
+
+    public void HandlePerchSelected(BirdBehaviour bird) 
+    {
+
+    }
+
+    public void HandlePerchUnselected(BirdBehaviour bird)
+    {
+        
     }
 }

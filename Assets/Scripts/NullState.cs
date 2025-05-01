@@ -22,7 +22,26 @@ public class NullState : IBirdState
 
     public void OnDone(BirdBehaviour bird) 
     {
-        bird.Animator.SetTrigger("FlyToIdle");
-        bird.TransitState(new PerchState());
+
     }
-}
+
+    public void HandlePalmUpSelected(BirdBehaviour bird) 
+    {
+
+    }
+
+    public void HandlePalmUpUnselected(BirdBehaviour bird) 
+    {
+
+    }
+
+    public void HandlePerchSelected(BirdBehaviour bird) 
+    {
+
+    }
+
+    public void HandlePerchUnselected(BirdBehaviour bird)
+    {
+
+    }
+ }

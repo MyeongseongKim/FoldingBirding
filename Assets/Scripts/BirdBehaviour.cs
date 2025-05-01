@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class BirdBehaviour : MonoBehaviour
@@ -29,6 +28,11 @@ public class BirdBehaviour : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _rotationSpeed;
     [SerializeField] private float _detection;
+    [SerializeField] private Transform _target;
+    public Transform Target {
+        get { return _target; }
+        set { _target = value; }
+    }
 
     [Header("Avoidance")]
     [SerializeField] private float _minAvoidStrength;
@@ -39,15 +43,15 @@ public class BirdBehaviour : MonoBehaviour
     private float _nextWanderTime;
 
     [Header("Spot")]
-    [SerializeField] private Spot _curTarget;
-    public Spot CurTarget {
-        get { return _curTarget; }
-        set { _curTarget = value; }
+    [SerializeField] private Spot _curSpot;
+    public Spot CurSpot {
+        get { return _curSpot; }
+        set { _curSpot = value; }
     }
-    [SerializeField] private Spot _preTarget;
-    public Spot PreTarget {
-        get { return _preTarget; }
-        set { _preTarget = value; }
+    [SerializeField] private Spot _preSpot;
+    public Spot PreSpot {
+        get { return _preSpot; }
+        set { _preSpot = value; }
     }
     [SerializeField] private GameObject _spotContainer;
     [SerializeField] private List<Spot> _perchingSpots;
@@ -76,6 +80,26 @@ public class BirdBehaviour : MonoBehaviour
 
     }
 
+    public void OnPalmUpSelected() 
+    {
+        _currentState?.HandlePalmUpSelected(this);
+    }
+
+    public void OnPalmUpUnselected() 
+    {
+        _currentState?.HandlePalmUpUnselected(this);
+    }
+
+    public void OnPerchSelected() 
+    {
+        _currentState?.HandlePerchSelected(this);
+    }
+
+    public void OnPerchUnselected() 
+    {
+        _currentState?.HandlePerchUnselected(this);
+    }
+
 
     public void TransitState(IBirdState state) 
     {
@@ -93,12 +117,31 @@ public class BirdBehaviour : MonoBehaviour
     } 
 
 
-    public IEnumerator ApproachToTarget(Action<BirdBehaviour> onDone)
+    public IEnumerator HoverAround(Action<BirdBehaviour> onDone)  
+    {
+        while (true) 
+        {            
+            Vector3 toTarget = _target.position - transform.position;
+            float distanceToTarget = toTarget.magnitude;
+            float factor = Mathf.Clamp01(distanceToTarget / _detection);
+
+            _direction = Vector3.SlerpUnclamped(_direction, toTarget.normalized, Time.deltaTime).normalized;
+
+            Quaternion rot = Quaternion.LookRotation(_direction, Vector3.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, rot, _rotationSpeed * Time.deltaTime);
+            transform.position += transform.forward * _speed * Time.deltaTime;
+ 
+            yield return null;
+        }
+    }
+
+
+    public IEnumerator ApproachTo(Action<BirdBehaviour> onDone)
     {
         Vector3 p0 = transform.position;
         Vector3 m0 = transform.forward;
-        Vector3 p1 = CurTarget.transform.position;
-        Vector3 m1 = CurTarget.transform.forward;
+        Vector3 p1 = _target.position;
+        Vector3 m1 = _target.forward;
 
         float totalLength = Utils.EstimateHermiteLength(p0, m0, p1, m1);
         float duration = totalLength / _speed;

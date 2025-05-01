@@ -1,49 +1,36 @@
-using System.Collections;
 using UnityEngine;
 
-
-public class FlyState : IBirdState
+public class HoverState : IBirdState
 {
     public void Enter(BirdBehaviour bird) 
     {
-        Debug.Log($"{bird.name} Enters : {nameof(FlyState)}");
+        Debug.Log($"{bird.name} Enters : {nameof(HoverState)}");
 
         bird.BehaviourCoroutine = bird.StartCoroutine(
-            bird.FlyAround(null)
+            bird.HoverAround(null)
         );
     }
     
     public void Update(BirdBehaviour bird) 
     {
-        var spot = bird.FindPerchingSpot();
-        if (spot != bird.PreSpot && !spot.IsOccupied)
-        {
-            spot.Occupy();
-            bird.CurSpot = spot;
-            bird.Target = spot.transform;
 
-            bird.TransitState(new ApproachState());
-        }
     }
     
     public void Exit(BirdBehaviour bird) 
     {
-        Debug.Log($"{bird.name} Exits : {nameof(FlyState)}");
+        Debug.Log($"{bird.name} Exits : {nameof(HoverState)}");
 
-        bird.StopCoroutine(bird.BehaviourCoroutine);
         bird.BehaviourCoroutine = null;
     }
 
     public void OnDone(BirdBehaviour bird) 
     {
-        
+
     }
 
     public void HandlePalmUpSelected(BirdBehaviour bird) 
     {
-        bird.Target = UserSpots.Instance.GetHoverTarget();
 
-        bird.TransitState(new HoverState());
     }
 
     public void HandlePalmUpUnselected(BirdBehaviour bird) 
@@ -53,11 +40,13 @@ public class FlyState : IBirdState
 
     public void HandlePerchSelected(BirdBehaviour bird) 
     {
+        bird.Target = UserSpots.Instance.GetPerchTarget();
 
+        bird.TransitState(new ApproachState());
     }
 
     public void HandlePerchUnselected(BirdBehaviour bird)
     {
         
     }
-}
+ }
